@@ -1,51 +1,37 @@
-import React from 'react';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import React, {useRef} from 'react';
+import {Layout, Flex, Button} from 'antd';
+import ProjectList from './components/ProjectList/index'
+import ProjectInfoEditor, {EditModalRef} from "./components/EditModal";
 
-const { Header, Content, Footer } = Layout;
+const {Header, Content, Footer} = Layout;
 
-const items = new Array(15).fill(null).map((_, index) => ({
-    key: index + 1,
-    label: `nav ${index + 1}`,
-}));
 
 const MainMenuLayout: React.FC = () => {
-    const {
-        token: { colorBgContainer, borderRadiusLG },
-    } = theme.useToken();
+    const editModalRef = useRef<EditModalRef>(null)
+    const handleOpenModal = () => {
+        if(editModalRef.current !== null) editModalRef.current.showModal();
+    }
+
 
     return (
-        <Layout>
-            <Header style={{ display: 'flex', alignItems: 'center' }}>
-                <div className="demo-logo" />
-                <Menu
-                    theme="dark"
-                    mode="horizontal"
-                    defaultSelectedKeys={['2']}
-                    items={items}
-                    style={{ flex: 1, minWidth: 0 }}
-                />
-            </Header>
-            <Content style={{ padding: '0 48px' }}>
-                <Breadcrumb style={{ margin: '16px 0' }}>
-                    <Breadcrumb.Item>Home</Breadcrumb.Item>
-                    <Breadcrumb.Item>List</Breadcrumb.Item>
-                    <Breadcrumb.Item>App</Breadcrumb.Item>
-                </Breadcrumb>
-                <div
-                    style={{
-                        background: colorBgContainer,
-                        minHeight: 280,
-                        padding: 24,
-                        borderRadius: borderRadiusLG,
-                    }}
-                >
-                    Content
-                </div>
-            </Content>
-            <Footer style={{ textAlign: 'center' }}>
-                Ant Design ©{new Date().getFullYear()} Created by Ant UED
-            </Footer>
-        </Layout>
+        <>
+            <ProjectInfoEditor ref={editModalRef}></ProjectInfoEditor>
+            <Layout>
+                <Header style={{display: 'flex', alignItems: 'center'}}>
+                    <h1 style={{color: 'white'}}>WEB IDE</h1>
+                </Header>
+                <Content style={{padding: '0 48px'}}>
+                    <Flex style={{padding: '30px 0'}} justify={"space-between"}>
+                        <h1 style={{margin: '0'}}>Project List</h1>
+                        <Button type={'primary'} onClick={handleOpenModal}>New Project</Button>
+                    </Flex>
+                    <ProjectList/>
+                </Content>
+                <Footer style={{textAlign: 'center'}}>
+                    WEB-IDE Designed by @LQF39466
+                </Footer>
+            </Layout>
+        </>
     );
 };
 

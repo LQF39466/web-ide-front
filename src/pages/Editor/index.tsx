@@ -1,63 +1,33 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
-    DesktopOutlined,
-    FileOutlined,
-    PieChartOutlined,
-    TeamOutlined,
-    UserOutlined,
+    PartitionOutlined,
 } from '@ant-design/icons';
-import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import {Flex} from 'antd';
+import {Layout, theme} from 'antd';
+import FileList from "./components/FileList";
 
-const { Header, Content, Footer, Sider } = Layout;
+const {Header, Content, Sider} = Layout;
 
-type MenuItem = Required<MenuProps>['items'][number];
-
-function getItem(
-    label: React.ReactNode,
-    key: React.Key,
-    icon?: React.ReactNode,
-    children?: MenuItem[],
-): MenuItem {
-    return {
-        key,
-        icon,
-        children,
-        label,
-    } as MenuItem;
-}
-
-const items: MenuItem[] = [
-    getItem('Option 1', '1', <PieChartOutlined />),
-    getItem('Option 2', '2', <DesktopOutlined />),
-    getItem('User', 'sub1', <UserOutlined />, [
-        getItem('Tom', '3'),
-        getItem('Bill', '4'),
-        getItem('Alex', '5'),
-    ]),
-    getItem('Team', 'sub2', <TeamOutlined />, [getItem('Team 1', '6'), getItem('Team 2', '8')]),
-    getItem('Files', '9', <FileOutlined />),
-];
 
 const EditorLayout: React.FC = () => {
-    const [collapsed, setCollapsed] = useState(false);
     const {
-        token: { colorBgContainer, borderRadiusLG },
+        token: {colorBgContainer, borderRadiusLG},
     } = theme.useToken();
 
     return (
-        <Layout style={{ minHeight: '100vh' }}>
-            <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-                <div className="demo-logo-vertical" />
-                <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items} />
-            </Sider>
+        <Layout style={{minHeight: '100vh'}}>
+            <Header style={{padding: 0, boxShadow: '0px 3px 3px black', zIndex: 10}}>
+
+            </Header>
             <Layout>
-                <Header style={{ padding: 0, background: colorBgContainer }} />
-                <Content style={{ margin: '0 16px' }}>
-                    <Breadcrumb style={{ margin: '16px 0' }}>
-                        <Breadcrumb.Item>User</Breadcrumb.Item>
-                        <Breadcrumb.Item>Bill</Breadcrumb.Item>
-                    </Breadcrumb>
+                <Sider style={{background: 'white'}}>
+                    <Flex style={{width: '100%', margin: '10px 0 10px 0'}}>
+                        <PartitionOutlined style={{margin: '0 10px 0 10px', fontSize: '16px'}}/>
+                        <h3 style={{margin: '0 10px 2px 0'}}>Project Name</h3>
+                    </Flex>
+                    <FileList/>
+                </Sider>
+                <Content style={{margin: '20px 16px'}}>
                     <div
                         style={{
                             padding: 24,
@@ -69,9 +39,6 @@ const EditorLayout: React.FC = () => {
                         Bill is a cat.
                     </div>
                 </Content>
-                <Footer style={{ textAlign: 'center' }}>
-                    Ant Design ©{new Date().getFullYear()} Created by Ant UED
-                </Footer>
             </Layout>
         </Layout>
     );
