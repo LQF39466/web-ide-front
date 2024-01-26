@@ -87,13 +87,13 @@ const LanguageTag: React.FC<{ type: string }> = ({type}) => {
 
 const TimeDisplay: React.FC<{ timeStamp: number }> = ({timeStamp}) => {
     const lastEdit = dayjs(timeStamp)
-    const timeDiff = dayjs().diff(lastEdit)
-    if (timeDiff < 60 * 1000)
-        return (<div>{(timeDiff / 1000).toFixed(0)} seconds ago</div>)
-    else if (timeDiff < 3600 * 1000)
-        return (<div>{(timeDiff / 60 / 1000).toFixed(0)} minutes ago</div>)
-    else if (timeDiff < 86400 * 1000)
-        return (<div>{(timeDiff / 24 / 60 / 1000).toFixed(0)} hours ago</div>)
+    const diffInSec = dayjs().diff(lastEdit) / 1000
+    if (diffInSec < 60)
+        return (<div>{(diffInSec).toFixed(0)} seconds ago</div>)
+    else if (diffInSec < 3600)
+        return (<div>{(diffInSec / 60).toFixed(0)} minutes ago</div>)
+    else if (diffInSec < 86400)
+        return (<div>{(diffInSec / 24 / 60).toFixed(0)} hours ago</div>)
     else
         return (<div>{lastEdit.format('MM-DD')}</div>)
 }
