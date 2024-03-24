@@ -41,7 +41,7 @@ const FileList: React.FC = () => {
             onSelect={onSelect}
             onExpand={onExpand}
             treeData={treeData}
-            rootStyle={{background: 'transparent', color: 'black', borderTop: '2px groove #eeeeee', borderRadius: '0', paddingTop: '10px'}}
+            rootStyle={{background: 'transparent', color: 'black', fontSize: '15px'}}
         />
     );
 };
