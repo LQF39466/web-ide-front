@@ -1,36 +1,41 @@
 import React, {useState, forwardRef, useImperativeHandle, Ref} from "react";
-import {Form, Modal, Input, Select} from 'antd'
+import {Form, Modal, Input, Select, message, Button} from 'antd'
+import {v4 as uuidv4} from 'uuid'
+import {ProjectIndex} from "../../../../types";
+import {post} from "../../../../utils/Comm/request"
 
-const { Option } = Select;
+const {Option} = Select;
 
 interface EditModalProps {
+    refresh: () => void
 }
 
 export type EditModalRef = {
     showModal(): void
 }
 
-const ProjectInfoEditor = forwardRef((props: EditModalProps,ref: Ref<EditModalRef>) => {
+const ProjectInfoEditor = forwardRef((props: EditModalProps, ref: Ref<EditModalRef>) => {
     const [open, setOpen] = useState(false)
-    const [confirmLoading, setConfirmLoading] = useState(false)
     const [form] = Form.useForm()
 
     const showModal = () => {
-        setOpen(true);
+        setOpen(true)
     }
 
-    const handleOk = () => {
-        setConfirmLoading(true)
-        setTimeout(() => {
-            setOpen(false)
-            setConfirmLoading(false)
-        }, 2000)
+    const handleOk = async (value: ProjectIndex) => {
+        console.log(JSON.stringify(value))
+        value.uid = uuidv4()
+        const response = await post('/api/addProject', JSON.stringify(value))
+        if (response !== undefined) message.info(response.data.message)
+        props.refresh()
+        setOpen(false)
     }
 
     const handleCancel = () => {
         setOpen(false)
     }
 
+    //Expose showModal function using imperative handel
     useImperativeHandle(ref, () => {
         return {showModal}
     })
@@ -40,13 +45,13 @@ const ProjectInfoEditor = forwardRef((props: EditModalProps,ref: Ref<EditModalRe
             <Modal
                 title='Create new project'
                 open={open}
-                onOk={handleOk}
-                confirmLoading={confirmLoading}
                 onCancel={handleCancel}
+                destroyOnClose
+                footer={[]}
             >
                 <Form
                     name="edit"
-                    wrapperCol={{ span: 24 }}
+                    wrapperCol={{span: 24}}
                     autoComplete="off"
                     form={form}
                     onFinish={handleOk}
@@ -54,27 +59,32 @@ const ProjectInfoEditor = forwardRef((props: EditModalProps,ref: Ref<EditModalRe
                     <Form.Item
                         label="Title"
                         name="title"
-                        rules={[{ required: true }]}
+                        rules={[{required: true}]}
                     >
-                        <Input />
+                        <Input/>
                     </Form.Item>
                     <Form.Item
                         label="Language"
-                        name="language"
-                        rules={[{ required: true }]}
+                        name="languageType"
+                        rules={[{required: true}]}
                     >
                         <Select>
                             <Option value="C">C</Option>
-                            <Option value="C++">C++</Option>
-                            <Option value="other">Others</Option>
+                            {/*<Option value="C++">C++</Option>*/}
+                            {/*<Option value="other">Others</Option>*/}
                         </Select>
                     </Form.Item>
                     <Form.Item
                         label="Description"
-                        name="description"
-                        rules={[{ required: true}]}
+                        name="details"
+                        rules={[{required: true}]}
                     >
-                        <Input />
+                        <Input/>
+                    </Form.Item>
+                    <Form.Item wrapperCol={{span: 24}}>
+                        <Button key="submit" type="primary" htmlType="submit" block={true}>
+                            保存
+                        </Button>
                     </Form.Item>
                 </Form>
             </Modal>

@@ -1,6 +1,6 @@
 import React, {useRef} from 'react';
 import {Layout, Flex, Button} from 'antd';
-import ProjectList from './components/ProjectList/index'
+import ProjectList, {ProjectListRef} from './components/ProjectList/index'
 import ProjectInfoEditor, {EditModalRef} from "./components/EditModal";
 
 const {Header, Content, Footer} = Layout;
@@ -8,14 +8,20 @@ const {Header, Content, Footer} = Layout;
 
 const MainMenuLayout: React.FC = () => {
     const editModalRef = useRef<EditModalRef>(null)
+    const projectListRef = useRef<ProjectListRef>(null)
+
+    const handelProjectListRefresh = () => {
+        if(projectListRef.current !== null) projectListRef.current.refresh()
+    }
+
     const handleOpenModal = () => {
-        if(editModalRef.current !== null) editModalRef.current.showModal();
+        if(editModalRef.current !== null) editModalRef.current.showModal()
     }
 
 
     return (
         <>
-            <ProjectInfoEditor ref={editModalRef}></ProjectInfoEditor>
+            <ProjectInfoEditor refresh={handelProjectListRefresh} ref={editModalRef}></ProjectInfoEditor>
             <Layout>
                 <Header style={{display: 'flex', alignItems: 'center'}}>
                     <h1 style={{color: 'white'}}>WEB IDE</h1>
@@ -25,7 +31,7 @@ const MainMenuLayout: React.FC = () => {
                         <h1 style={{margin: '0'}}>Project List</h1>
                         <Button type={'primary'} onClick={handleOpenModal}>New Project</Button>
                     </Flex>
-                    <ProjectList/>
+                    <ProjectList ref={projectListRef}/>
                 </Content>
                 <Footer style={{textAlign: 'center'}}>
                     WEB-IDE Designed by @LQF39466

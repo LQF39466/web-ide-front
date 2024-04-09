@@ -1,43 +1,15 @@
-import React, {useRef} from "react";
-import {Button, Dropdown, Flex, List, MenuProps, Tag} from "antd";
+import React, {forwardRef, Ref, useEffect, useImperativeHandle, useRef, useState} from "react";
+import {Button, Dropdown, Flex, List, MenuProps, message, Tag} from "antd";
 import {DeleteOutlined, ExportOutlined, MoreOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
 import ConfirmModal, {ConfirmModalRef} from "../ConfirmModal";
+import {ProjectIndex} from "../../../../types";
+import { get } from "../../../../utils/Comm/request"
 
-const data = [
-    {
-        uid: '1',
-        title: 'Project Title 1',
-        description: 'project description 1',
-        type: 'JavaScript',
-        createTime: 1703238598000,
-        lastEdit: 1706242000000,
-    },
-    {
-        uid: '2',
-        title: 'Project Title 2',
-        description: 'project description 2',
-        type: 'C',
-        createTime: 1703438598000,
-        lastEdit: 1706228598000,
-    },
-    {
-        uid: '3',
-        title: 'Project Title 3',
-        description: 'project description 3',
-        type: 'C',
-        createTime: 1703228598000,
-        lastEdit: 1706138598000,
-    },
-    {
-        uid: '4',
-        title: 'Project Title 4',
-        description: 'project description 4',
-        type: 'C++',
-        createTime: 1703234598000,
-        lastEdit: 1706238398000,
-    },
-];
+
+interface projectListProps{}
+export type ProjectListRef = { refresh(): void }
+
 
 const handleProjectOpen = (uid: string) => {
     // request /code page from server
@@ -95,7 +67,13 @@ const ActionButton: React.FC<{ uid: string }> = ({uid}) => {
     )
 }
 
-const ProjectList: React.FC = () => {
+const ProjectList = forwardRef((props: projectListProps, ref: Ref<ProjectListRef>) => {
+    const [data , setData] = useState<ProjectIndex[]>([]);
+    const [refreshSignal, setRefreshSignal] = useState<boolean>(false)
+    const refresh = () => {setRefreshSignal(!refreshSignal)}
+
+    useImperativeHandle(ref, () => {return {refresh}})
+
     const languageList = [
         {
             type: 'C',
@@ -110,6 +88,20 @@ const ProjectList: React.FC = () => {
             color: 'red',
         }
     ]
+
+    const fetchData = async () => {
+        const response = await get('/api/getProjectList');
+        console.log('Fetching list')
+        console.log(response)
+        if(response !== undefined && response.data.code === 0) {
+            console.log(response.data)
+            setData(JSON.parse(response.data.projectList))
+        } else {
+            message.error('Failed to fetch project list');
+        }
+    }
+
+    useEffect(() => {fetchData()}, [refreshSignal])
 
     const LanguageTag: React.FC<{ type: string }> = ({type}) => {
         if (type !== 'C' && type !== 'C++') type = 'unknown'
@@ -148,11 +140,11 @@ const ProjectList: React.FC = () => {
                             <List.Item actions={[<ActionButton uid={item.uid}/>]}>
                                 <List.Item.Meta
                                     title={<a onClick={() => handleProjectOpen(item.uid)}>{item.title}</a>}
-                                    description={<div>{item.description}</div>}
+                                    description={<div>{item.details}</div>}
                                 />
                                 <Flex justify={'space-between'}>
                                     <TimeDisplay timeStamp={item.lastEdit}/>
-                                    <LanguageTag type={item.type}/>
+                                    <LanguageTag type={item.languageType}/>
                                 </Flex>
                             </List.Item>
                         )}
@@ -162,6 +154,6 @@ const ProjectList: React.FC = () => {
             </div>
         </>
     );
-}
+})
 
 export default ProjectList
