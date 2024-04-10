@@ -16,7 +16,7 @@ const handleProjectOpen = (uid: string) => {
     console.log('open ', uid)
 }
 
-const ActionButton: React.FC<{ uid: string }> = ({uid}) => {
+const ActionButton: React.FC<{ uid: string, refresh: () => void }> = ({uid, refresh}) => {
     const confirmModalRef = useRef<ConfirmModalRef>(null)
     const handleOpenModal = () => {
         if (confirmModalRef.current !== null) confirmModalRef.current.showModal();
@@ -57,7 +57,7 @@ const ActionButton: React.FC<{ uid: string }> = ({uid}) => {
 
     return (
         <>
-            <ConfirmModal ref={confirmModalRef}></ConfirmModal>
+            <ConfirmModal uid={uid} refresh={refresh} ref={confirmModalRef}></ConfirmModal>
             <Dropdown menu={{items, onClick}} placement={'bottom'}>
                 <Button style={{height: '30px', width: '30px', padding: '0'}}>
                     <MoreOutlined/>
@@ -91,10 +91,7 @@ const ProjectList = forwardRef((props: projectListProps, ref: Ref<ProjectListRef
 
     const fetchData = async () => {
         const response = await get('/api/getProjectList');
-        console.log('Fetching list')
-        console.log(response)
         if(response !== undefined && response.data.code === 0) {
-            console.log(response.data)
             setData(JSON.parse(response.data.projectList))
         } else {
             message.error('Failed to fetch project list');
@@ -137,7 +134,7 @@ const ProjectList = forwardRef((props: projectListProps, ref: Ref<ProjectListRef
                         itemLayout='horizontal'
                         dataSource={data}
                         renderItem={(item) => (
-                            <List.Item actions={[<ActionButton uid={item.uid}/>]}>
+                            <List.Item actions={[<ActionButton uid={item.uid} refresh={refresh}/>]}>
                                 <List.Item.Meta
                                     title={<a onClick={() => handleProjectOpen(item.uid)}>{item.title}</a>}
                                     description={<div>{item.details}</div>}

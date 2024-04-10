@@ -23,7 +23,6 @@ const ProjectInfoEditor = forwardRef((props: EditModalProps, ref: Ref<EditModalR
     }
 
     const handleOk = async (value: ProjectIndex) => {
-        console.log(JSON.stringify(value))
         value.uid = uuidv4()
         const response = await post('/api/addProject', JSON.stringify(value))
         if (response !== undefined) message.info(response.data.message)
