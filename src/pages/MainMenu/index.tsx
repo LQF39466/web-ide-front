@@ -22,7 +22,7 @@ const MainMenuLayout: React.FC = () => {
     return (
         <>
             <ProjectInfoEditor refresh={handelProjectListRefresh} ref={editModalRef}></ProjectInfoEditor>
-            <Layout>
+            <Layout style={{minHeight: '100vh'}}>
                 <Header style={{display: 'flex', alignItems: 'center'}}>
                     <h1 style={{color: 'white'}}>WEB IDE</h1>
                 </Header>
