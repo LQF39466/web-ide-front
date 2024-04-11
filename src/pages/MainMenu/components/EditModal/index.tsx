@@ -81,8 +81,8 @@ const ProjectInfoEditor = forwardRef((props: EditModalProps, ref: Ref<EditModalR
                         <Input/>
                     </Form.Item>
                     <Form.Item wrapperCol={{span: 24}}>
-                        <Button key="submit" type="primary" htmlType="submit" block={true}>
-                            保存
+                        <Button key="submit" type="primary" htmlType="submit" block>
+                            OK
                         </Button>
                     </Form.Item>
                 </Form>

@@ -1,10 +1,12 @@
 import React, {forwardRef, Ref, useImperativeHandle, useState} from "react";
 import {message, Modal} from 'antd'
-import {post} from "../../../../utils/Comm/request";
+import {post} from "../Comm/request";
 
 
 interface ConfirmModalProps {
     uid: string
+    projectUid: string
+    type: string
     refresh: () => void
 }
 
@@ -20,7 +22,9 @@ const ConfirmModal = forwardRef((props: ConfirmModalProps, ref: Ref<ConfirmModal
     }
 
     const handleOk = async () => {
-        const response = await post('/api/deleteProject', JSON.stringify({uid: props.uid}))
+        let response = undefined
+        if(props.type === 'project') response = await post('/api/deleteProject', JSON.stringify({uid: props.uid}))
+        else if(props.type ==='file') response = await post('/api/deleteFile', JSON.stringify({uid: props.uid, projectUid: props.projectUid}))
         if (response !== undefined) message.info(response.data.message)
         props.refresh()
         setOpen(false)
@@ -41,7 +45,7 @@ const ConfirmModal = forwardRef((props: ConfirmModalProps, ref: Ref<ConfirmModal
                 onCancel={handleCancel}
                 okText={'Confirm'}
                 okType={'danger'}
-            >Delete this project?
+            >Delete this {props.type}?
             </Modal>
         </>);
 })

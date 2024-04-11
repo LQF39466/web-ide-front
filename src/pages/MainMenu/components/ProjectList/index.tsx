@@ -2,7 +2,7 @@ import React, {forwardRef, Ref, useEffect, useImperativeHandle, useRef, useState
 import {Button, Dropdown, Flex, List, MenuProps, message, Tag} from "antd";
 import {DeleteOutlined, ExportOutlined, MoreOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
-import ConfirmModal, {ConfirmModalRef} from "../ConfirmModal";
+import ConfirmModal, {ConfirmModalRef} from "../../../../utils/ConfirmModal";
 import {ProjectIndex} from "../../../../types";
 import {get} from "../../../../utils/Comm/request"
 import {Link} from "react-router-dom";
@@ -53,7 +53,7 @@ const ActionButton: React.FC<{ uid: string, refresh: () => void }> = ({uid, refr
 
     return (
         <>
-            <ConfirmModal uid={uid} refresh={refresh} ref={confirmModalRef}></ConfirmModal>
+            <ConfirmModal uid={uid} projectUid={''} refresh={refresh} type={'project'} ref={confirmModalRef}></ConfirmModal>
             <Dropdown menu={{items, onClick}} placement={'bottom'}>
                 <Button style={{height: '30px', width: '30px', padding: '0'}}>
                     <MoreOutlined/>

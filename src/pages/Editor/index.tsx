@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {forwardRef, useEffect, useImperativeHandle, useState} from 'react';
 import {
     PartitionOutlined,
 } from '@ant-design/icons';
@@ -13,11 +13,20 @@ import {get} from "../../utils/Comm/request";
 const {Content, Sider} = Layout;
 
 
-const EditorLayout: React.FC = () => {
-    const [projectTitle, setProjectTitle] = useState<string>("");
+const EditorLayout: React.FC = forwardRef((props, ref) => {
+    const [projectTitle, setProjectTitle] = useState<string>('');
+    const [projectUid, setProjectUid] = useState<string>('');
     const [fileList, setFileList] = React.useState<FileIndex[]>([]);
     const params = useParams()
     const navigate = useNavigate()
+    const [refreshSignal, setRefreshSignal] = useState<boolean>(false)
+    const refresh = () => {
+        setRefreshSignal(!refreshSignal)
+    }
+
+    useImperativeHandle(ref, () => {
+        return {refresh}
+    })
 
     const fetchData = async () => {
         const response = await get('/api/getProjectList');
@@ -28,6 +37,7 @@ const EditorLayout: React.FC = () => {
                 navigate(-1)
             }
             setProjectTitle(projectIndex.title)
+            setProjectUid(projectIndex.uid)
             setFileList([projectIndex.entrance].concat(projectIndex.headers))
         } else {
             message.error('Failed to fetch project list');
@@ -36,7 +46,7 @@ const EditorLayout: React.FC = () => {
 
     useEffect(() => {
         fetchData()
-    }, []);
+    }, [refreshSignal])
 
     return (
         <Layout style={{minHeight: '100vh'}}>
@@ -45,7 +55,7 @@ const EditorLayout: React.FC = () => {
                     <PartitionOutlined style={{margin: '0 10px 0 10px', fontSize: '16px', color: 'white'}}/>
                     <h3 style={{margin: '0 10px 2px 0', color: 'white'}}>{projectTitle}</h3>
                 </Flex>
-                <FileList fileList={fileList}/>
+                <FileList fileList={fileList} projectUid={projectUid} refresh={refresh}/>
             </Sider>
             <Content style={{height: '100vh', marginLeft: '200px', backgroundColor: '#edede9'}}>
                 <div style={{height: '100%', padding: '10px'}}>
@@ -53,7 +63,7 @@ const EditorLayout: React.FC = () => {
                 </div>
             </Content>
         </Layout>
-    );
-};
+    )
+})
 
 export default EditorLayout;
