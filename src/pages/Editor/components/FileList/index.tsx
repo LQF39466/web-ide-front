@@ -1,31 +1,30 @@
-import React from 'react';
-import { Tree } from 'antd';
-import type { GetProps, TreeDataNode } from 'antd';
+import {Tree} from 'antd';
+import type {GetProps, TreeDataNode} from 'antd';
+import {FileIndex} from "../../../../types";
+
+interface FileListProps {
+    fileList: FileIndex[]
+}
 
 type DirectoryTreeProps = GetProps<typeof Tree.DirectoryTree>;
 
-const { DirectoryTree } = Tree;
+const {DirectoryTree} = Tree;
 
-const treeData: TreeDataNode[] = [
-    {
-        title: 'parent 0',
-        key: '0-0',
-        children: [
-            { title: 'leaf 0-0', key: '0-0-0', isLeaf: true },
-            { title: 'leaf 0-1', key: '0-0-1', isLeaf: true },
-        ],
-    },
-    {
-        title: 'parent 1',
-        key: '0-1',
-        children: [
-            { title: 'leaf 1-0', key: '0-1-0', isLeaf: true },
-            { title: 'leaf 1-1', key: '0-1-1', isLeaf: true },
-        ],
-    },
-];
 
-const FileList: React.FC = () => {
+const FileList: React.FC<FileListProps> = (props) => {
+    const listToTree = (fileList: FileIndex[]) => {
+        const treeData: TreeDataNode[] = [];
+        let key = 0
+        fileList.forEach((e: FileIndex) => {
+            treeData.push({
+                title: e.title,
+                key: '0-' + key++,
+                isLeaf: true,
+            })
+        })
+        return treeData
+    }
+
     const onSelect: DirectoryTreeProps['onSelect'] = (keys, info) => {
         console.log('Trigger Select', keys, info);
     };
@@ -40,7 +39,7 @@ const FileList: React.FC = () => {
             defaultExpandAll
             onSelect={onSelect}
             onExpand={onExpand}
-            treeData={treeData}
+            treeData={listToTree(props.fileList)}
             rootStyle={{background: 'transparent', color: 'black', fontSize: '15px'}}
         />
     );

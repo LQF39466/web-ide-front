@@ -4,31 +4,30 @@ import {DeleteOutlined, ExportOutlined, MoreOutlined} from "@ant-design/icons";
 import dayjs from "dayjs";
 import ConfirmModal, {ConfirmModalRef} from "../ConfirmModal";
 import {ProjectIndex} from "../../../../types";
-import { get } from "../../../../utils/Comm/request"
+import {get} from "../../../../utils/Comm/request"
+import {Link} from "react-router-dom";
 
-
-interface projectListProps{}
-export type ProjectListRef = { refresh(): void }
-
-
-const handleProjectOpen = (uid: string) => {
-    // request /code page from server
-    console.log('open ', uid)
+interface projectListProps {
 }
+
+export type ProjectListRef = { refresh(): void }
 
 const ActionButton: React.FC<{ uid: string, refresh: () => void }> = ({uid, refresh}) => {
     const confirmModalRef = useRef<ConfirmModalRef>(null)
     const handleOpenModal = () => {
         if (confirmModalRef.current !== null) confirmModalRef.current.showModal();
     }
+
     const items: MenuProps['items'] = [
         {
             key: 'open_' + uid,
             label: (
-                <Flex justify={'space-between'}>
-                    <ExportOutlined/>
-                    <div style={{marginLeft: '3px'}}>Open</div>
-                </Flex>
+                <Link to={'/code/' + uid}>
+                    <Flex justify={'space-between'}>
+                        <ExportOutlined/>
+                        <div style={{marginLeft: '3px'}}>Open</div>
+                    </Flex>
+                </Link>
             ),
         },
         {
@@ -46,9 +45,6 @@ const ActionButton: React.FC<{ uid: string, refresh: () => void }> = ({uid, refr
     const onClick: MenuProps['onClick'] = ({key}) => {
         const info = key.split('_')
         switch (info[0]) {
-            case 'open':
-                handleProjectOpen(info[1])
-                break
             case 'delete':
                 handleOpenModal()
                 break
@@ -68,11 +64,15 @@ const ActionButton: React.FC<{ uid: string, refresh: () => void }> = ({uid, refr
 }
 
 const ProjectList = forwardRef((props: projectListProps, ref: Ref<ProjectListRef>) => {
-    const [data , setData] = useState<ProjectIndex[]>([]);
+    const [data, setData] = useState<ProjectIndex[]>([]);
     const [refreshSignal, setRefreshSignal] = useState<boolean>(false)
-    const refresh = () => {setRefreshSignal(!refreshSignal)}
+    const refresh = () => {
+        setRefreshSignal(!refreshSignal)
+    }
 
-    useImperativeHandle(ref, () => {return {refresh}})
+    useImperativeHandle(ref, () => {
+        return {refresh}
+    })
 
     const languageList = [
         {
@@ -91,14 +91,16 @@ const ProjectList = forwardRef((props: projectListProps, ref: Ref<ProjectListRef
 
     const fetchData = async () => {
         const response = await get('/api/getProjectList');
-        if(response !== undefined && response.data.code === 0) {
+        if (response !== undefined && response.data.code === 0) {
             setData(JSON.parse(response.data.projectList))
         } else {
             message.error('Failed to fetch project list');
         }
     }
 
-    useEffect(() => {fetchData()}, [refreshSignal])
+    useEffect(() => {
+        fetchData()
+    }, [refreshSignal])
 
     const LanguageTag: React.FC<{ type: string }> = ({type}) => {
         if (type !== 'C' && type !== 'C++') type = 'unknown'
@@ -136,7 +138,7 @@ const ProjectList = forwardRef((props: projectListProps, ref: Ref<ProjectListRef
                         renderItem={(item) => (
                             <List.Item actions={[<ActionButton uid={item.uid} refresh={refresh}/>]}>
                                 <List.Item.Meta
-                                    title={<a onClick={() => handleProjectOpen(item.uid)}>{item.title}</a>}
+                                    title={<Link to={'/code/' + item.uid}>{item.title}</Link>}
                                     description={<div>{item.details}</div>}
                                 />
                                 <Flex justify={'space-between'}>

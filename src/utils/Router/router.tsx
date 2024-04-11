@@ -8,10 +8,9 @@ const Router = createBrowserRouter([
         element: <MainMenuLayout />,
     },
     {
-        path: "/code",
+        path: "/code/:uid",
         element: <EditorLayout />,
     }
-
 ])
 
 export default Router
