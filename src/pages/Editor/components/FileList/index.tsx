@@ -1,7 +1,7 @@
 import React, {forwardRef, Ref, useImperativeHandle, useRef, useState} from "react";
 import {Flex, Button, Tree, Form, message, Input, Select, Modal} from 'antd';
 import type {GetProps, TreeDataNode} from 'antd';
-import {FileIndex} from "../../../../types";
+import {FileIndex, ProjectIndex} from "../../../../types";
 import {PlusOutlined, DeleteOutlined} from "@ant-design/icons";
 import {v4 as uuidv4} from "uuid";
 import {post} from "../../../../utils/Comm/request";
@@ -22,9 +22,9 @@ interface FileOpProps {
 }
 
 interface FileListProps {
-    fileList: FileIndex[]
-    projectUid: string
+    projectIndex: ProjectIndex
     refresh: () => void
+    fetchFile: (uid: string, projectUid: string) => Promise<void>
 }
 
 type EditModalRef = {
@@ -137,7 +137,9 @@ const FileOperation: React.FC<FileOpProps> = (props) => {
     </>
 }
 
-const FileList: React.FC<FileListProps> = (props) => {
+const FileList = forwardRef((props: FileListProps, ref) => {
+    const fileList = [props.projectIndex.entrance].concat(props.projectIndex.headers)
+
     const listToTree = (fileList: FileIndex[]) => {
         const treeData: TreeDataNode[] = [];
         let key = 0
@@ -151,10 +153,16 @@ const FileList: React.FC<FileListProps> = (props) => {
         })
         return treeData
     }
-    const [selectedFileUid, setSelectedFileUid] = React.useState('')
+    const [selectedFileUid, setSelectedFileUid] = React.useState(props.projectIndex.entrance.uid)
 
-    const onSelect: DirectoryTreeProps['onSelect'] = (keys) => {
-        setSelectedFileUid(props.fileList[parseInt(keys[0].toString().split('-')[1])].uid)
+    useImperativeHandle(ref, () => {
+        return selectedFileUid
+    })
+
+    const onSelect: DirectoryTreeProps['onSelect'] = async (keys) => {
+        const currentUid = fileList[parseInt(keys[0].toString().split('-')[1])].uid
+        setSelectedFileUid(currentUid)
+        await props.fetchFile(currentUid, props.projectIndex.uid)
     };
 
     const onExpand: DirectoryTreeProps['onExpand'] = (keys, info) => {
@@ -163,17 +171,17 @@ const FileList: React.FC<FileListProps> = (props) => {
 
     return (
         <Flex vertical={true}>
-            <FileOperation uid={selectedFileUid} projectUid={props.projectUid} refresh={props.refresh}/>
+            <FileOperation uid={selectedFileUid} projectUid={props.projectIndex.uid} refresh={props.refresh}/>
             <DirectoryTree
                 defaultExpandAll
                 onSelect={onSelect}
                 onExpand={onExpand}
-                treeData={listToTree(props.fileList)}
+                treeData={listToTree(fileList)}
                 rootStyle={{background: 'transparent', color: 'black', fontSize: '15px'}}
                 defaultSelectedKeys={['0-0']}
             />
         </Flex>
     )
-}
+})
 
 export default FileList;
