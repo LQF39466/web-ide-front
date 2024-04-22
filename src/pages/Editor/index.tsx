@@ -35,6 +35,7 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
         return {refresh}
     })
 
+    //ProjectList fetching
     const fetchData = async () => {
         const response = await get('/api/getProjectList');
         if (response !== undefined && response.data.code === 0) {
@@ -51,8 +52,10 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
         return undefined
     }
 
+    //File fetching
     const fileListRef = useRef<FileListRef>(null)
     const [fileContent, setFileContent] = useState<string>('')
+    const [fileUid, setFileUid] = useState<string>('')
     const fetchFile = async (uid: string, projectUid: string) => {
         if (uid === '' && projectUid === '') {
             const projectIndex = await fetchData()
@@ -64,6 +67,7 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
         const response = await post('/api/getFile', JSON.stringify({uid: uid, projectUid: projectUid}));
         if (response !== undefined) {
             setFileContent(response.data)
+            setFileUid(uid)
             message.info('File fetched')
         } else {
             message.error('Failed to fetch file');
@@ -86,7 +90,7 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
             </Sider>
             <Content style={{height: '100vh', marginLeft: '200px', backgroundColor: '#edede9'}}>
                 <div style={{height: '100%', padding: '10px'}}>
-                    <CodeEditor codeFromFile={fileContent}/>
+                    <CodeEditor codeFromFile={fileContent} fileUid={fileUid}/>
                 </div>
             </Content>
         </Layout>

@@ -10,7 +10,6 @@ export async function get(url: string) {
 
 export async function post(url: string, jsonString: string) {
     if (jsonString !== "") {
-        // console.log(jsonString);
         const json: JSON = JSON.parse(jsonString);
         try {
             return await axios.post(url, json);

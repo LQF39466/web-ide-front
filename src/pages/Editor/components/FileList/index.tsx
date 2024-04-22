@@ -1,4 +1,4 @@
-import React, {forwardRef, Ref, useImperativeHandle, useRef, useState} from "react";
+import React, {forwardRef, Ref, useEffect, useImperativeHandle, useRef, useState} from "react";
 import {Flex, Button, Tree, Form, message, Input, Select, Modal} from 'antd';
 import type {GetProps, TreeDataNode} from 'antd';
 import {FileIndex, ProjectIndex} from "../../../../types";
@@ -139,6 +139,10 @@ const FileOperation: React.FC<FileOpProps> = (props) => {
 
 const FileList = forwardRef((props: FileListProps, ref) => {
     const fileList = [props.projectIndex.entrance].concat(props.projectIndex.headers)
+    const [selectedFileUid, setSelectedFileUid] = React.useState(props.projectIndex.entrance.uid)
+    useImperativeHandle(ref, () => {
+        return selectedFileUid
+    })
 
     const listToTree = (fileList: FileIndex[]) => {
         const treeData: TreeDataNode[] = [];
@@ -153,21 +157,31 @@ const FileList = forwardRef((props: FileListProps, ref) => {
         })
         return treeData
     }
-    const [selectedFileUid, setSelectedFileUid] = React.useState(props.projectIndex.entrance.uid)
 
-    useImperativeHandle(ref, () => {
-        return selectedFileUid
-    })
+    useEffect(() => {
+        return saveFileToServer
+    }, [selectedFileUid]);
+
+    const saveFileToServer = () => {
+        const content = localStorage.getItem('file_' + selectedFileUid)
+        if (content === null || props.projectIndex.uid === '' || selectedFileUid === '') return
+        post('/api/saveFile', JSON.stringify({
+            projectUid: props.projectIndex.uid,
+            uid: selectedFileUid,
+            content: content
+        }))
+    }
 
     const onSelect: DirectoryTreeProps['onSelect'] = async (keys) => {
         const currentUid = fileList[parseInt(keys[0].toString().split('-')[1])].uid
         setSelectedFileUid(currentUid)
         await props.fetchFile(currentUid, props.projectIndex.uid)
-    };
+    }
 
     const onExpand: DirectoryTreeProps['onExpand'] = (keys, info) => {
         console.log('Trigger Expand', keys, info);
-    };
+    }
+
 
     return (
         <Flex vertical={true}>

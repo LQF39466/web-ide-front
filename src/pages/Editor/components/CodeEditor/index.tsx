@@ -2,10 +2,11 @@ import React, {useEffect, useState} from "react";
 import {Flex} from "antd"
 
 import {Slate, Editable, withReact, ReactEditor, RenderElementProps} from "slate-react"
-import {createEditor, BaseText, Descendant, BaseRange, Transforms, Editor} from 'slate'
+import {createEditor, BaseText, Descendant, BaseRange, Transforms, Editor, Node} from 'slate'
 
 type CodeEditorProps = {
     codeFromFile: string
+    fileUid: string
 }
 
 declare module 'slate' {
@@ -48,6 +49,10 @@ const CodeEditor = (props: CodeEditorProps) => {
         return descendants
     }
 
+    const serialize = (nodes: Node[]) => {
+        return nodes.map(n => Node.string(n)).join('\r\n')
+    }
+
     const updateNodes = () => { //Clear current slate then insert with new content
         setNodes(stringToDescendant(props.codeFromFile))
         const currentEnd = Editor.end(editor, [])   //Mark the end of current slate
@@ -68,6 +73,11 @@ const CodeEditor = (props: CodeEditorProps) => {
             lineMarker = lineMarker + i + '\n'
         }
         return lineMarker
+    }
+
+    const handelContentChange = (value: Descendant[]) => {
+        setNodes(value) //For line marker generation
+        localStorage.setItem('file_' + props.fileUid, serialize(value))  //Save changes at realtime
     }
 
     return (<Flex style={{height: '100%'}} vertical={true}>
@@ -99,7 +109,7 @@ const CodeEditor = (props: CodeEditorProps) => {
                         <code>{lineMarkerGen(nodes)}</code>
                     </pre>
                 <div style={{marginLeft: '5px', width: '100%', overflowX: 'auto', marginTop: '16px'}}>
-                    <Slate editor={editor} initialValue={initialValue} onValueChange={value => setNodes(value)}>
+                    <Slate editor={editor} initialValue={initialValue} onValueChange={handelContentChange}>
                         <Editable
                             renderElement={ElementWrapper}
                         />
