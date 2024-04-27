@@ -90,7 +90,7 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
             </Sider>
             <Content style={{height: '100vh', marginLeft: '200px', backgroundColor: '#edede9'}}>
                 <div style={{height: '100%', padding: '10px'}}>
-                    <CodeEditor codeFromFile={fileContent} fileUid={fileUid}/>
+                    <CodeEditor codeFromFile={fileContent} fileUid={fileUid} projectUid={projectIndex.uid}/>
                 </div>
             </Content>
         </Layout>

@@ -3,10 +3,12 @@ import {Flex} from "antd"
 
 import {Slate, Editable, withReact, ReactEditor, RenderElementProps} from "slate-react"
 import {createEditor, BaseText, Descendant, BaseRange, Transforms, Editor, Node} from 'slate'
+import Navigation from "../Navigation";
 
 type CodeEditorProps = {
     codeFromFile: string
     fileUid: string
+    projectUid: string
 }
 
 declare module 'slate' {
@@ -49,10 +51,6 @@ const CodeEditor = (props: CodeEditorProps) => {
         return descendants
     }
 
-    const serialize = (nodes: Node[]) => {
-        return nodes.map(n => Node.string(n)).join('\r\n')
-    }
-
     const updateNodes = () => { //Clear current slate then insert with new content
         setNodes(stringToDescendant(props.codeFromFile))
         const currentEnd = Editor.end(editor, [])   //Mark the end of current slate
@@ -75,6 +73,10 @@ const CodeEditor = (props: CodeEditorProps) => {
         return lineMarker
     }
 
+    const serialize = (nodes: Node[]) => {
+        return nodes.map(n => Node.string(n)).join('\r\n')
+    }
+
     const handelContentChange = (value: Descendant[]) => {
         setNodes(value) //For line marker generation
         localStorage.setItem('file_' + props.fileUid, serialize(value))  //Save changes at realtime
@@ -82,9 +84,9 @@ const CodeEditor = (props: CodeEditorProps) => {
 
     return (<Flex style={{height: '100%'}} vertical={true}>
         <div style={{
-            height: '40px', width: '100%', marginBottom: '10px', backgroundColor: 'white', borderRadius: '8px'
+            height: '52px', width: '100%', marginBottom: '10px', backgroundColor: 'white', borderRadius: '8px'
         }}>
-
+            <Navigation projectUid={props.projectUid}/>
         </div>
         <div style={{
             height: '100%',

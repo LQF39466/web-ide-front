@@ -158,7 +158,7 @@ const FileList = forwardRef((props: FileListProps, ref) => {
         return treeData
     }
 
-    useEffect(() => {
+    useEffect(() => {   //useEffect makes sure changes being synced when focus change
         return saveFileToServer
     }, [selectedFileUid]);
 
