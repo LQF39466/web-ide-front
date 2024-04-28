@@ -74,6 +74,7 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
     useEffect(() => {
         fetchData()
         fetchFile('', '')
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [refreshSignal])
 
     //Output processing

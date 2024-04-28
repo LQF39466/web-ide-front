@@ -164,6 +164,7 @@ const FileList = forwardRef((props: FileListProps, ref: Ref<FileListRef>) => {
 
     useEffect(() => {   //useEffect makes sure changes being synced when focus change
         return saveFileToServer
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedFileUid]);
 
     const saveFileToServer = () => {

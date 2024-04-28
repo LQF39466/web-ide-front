@@ -33,8 +33,11 @@ const Navigation: React.FC<NavigationProps> = (props: NavigationProps) => {
         const response = await post('/api/runProject', JSON.stringify({uid: props.projectUid}))
         if (response !== undefined && response.data.code === 0) {
             props.setStdout(response.data.stdout)
+        } else if (response !== undefined && response.data.code === -1) {
+            message.error('Failed to run project')
+            props.setStdout(response.data.stdout)
         } else {
-            message.error('Failed to run project');
+            message.error('Unknown error has occurred');
         }
         setLoading(false)
         setTerminateDisabler(true)

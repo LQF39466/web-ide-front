@@ -63,6 +63,7 @@ const CodeEditor = (props: CodeEditorProps) => {
 
     useEffect(() => {
         updateNodes()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [props]);
 
     const initialValue: Descendant[] = stringToDescendant('')
