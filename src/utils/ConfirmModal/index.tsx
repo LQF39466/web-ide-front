@@ -23,8 +23,11 @@ const ConfirmModal = forwardRef((props: ConfirmModalProps, ref: Ref<ConfirmModal
 
     const handleOk = async () => {
         let response = undefined
-        if(props.type === 'project') response = await post('/api/deleteProject', JSON.stringify({uid: props.uid}))
-        else if(props.type ==='file') response = await post('/api/deleteFile', JSON.stringify({uid: props.uid, projectUid: props.projectUid}))
+        if (props.type === 'project') response = await post('/api/deleteProject', JSON.stringify({uid: props.uid}))
+        else if (props.type === 'file') response = await post('/api/deleteFile', JSON.stringify({
+            uid: props.uid,
+            projectUid: props.projectUid
+        }))
         if (response !== undefined) message.info(response.data.message)
         props.refresh()
         setOpen(false)
@@ -39,15 +42,15 @@ const ConfirmModal = forwardRef((props: ConfirmModalProps, ref: Ref<ConfirmModal
     })
 
     return (<>
-            <Modal
-                open={open}
-                onOk={handleOk}
-                onCancel={handleCancel}
-                okText={'Confirm'}
-                okType={'danger'}
-            >Delete this {props.type}?
-            </Modal>
-        </>);
+        <Modal
+            open={open}
+            onOk={handleOk}
+            onCancel={handleCancel}
+            okText={'Confirm'}
+            okType={'danger'}
+        >Delete this {props.type}?
+        </Modal>
+    </>);
 })
 
 export default ConfirmModal

@@ -1,18 +1,15 @@
 import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
-import {PartitionOutlined} from '@ant-design/icons';
-import {Flex, message} from 'antd';
+import {PartitionOutlined, UpOutlined} from '@ant-design/icons';
+import {Flex, FloatButton, message} from 'antd';
 import {Layout} from 'antd';
-import FileList from "./components/FileList";
+import FileList, {FileListRef} from "./components/FileList";
 import CodeEditor from "./components/CodeEditor"
 import {ProjectIndex} from "../../types";
 import {useNavigate, useParams} from "react-router-dom";
 import {get, post} from "../../utils/Comm/request";
+import StatusModal, {StatusModalRef} from "./components/StatusModal";
 
 const {Content, Sider} = Layout;
-
-type FileListRef = {
-    selectedFileUid: string
-}
 
 const EditorLayout: React.FC = forwardRef((props, ref) => {
     const [projectIndex, setProjectIndex] = useState<ProjectIndex>({
@@ -53,7 +50,7 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
     }
 
     //File fetching
-    const fileListRef = useRef<FileListRef>(null)
+    const fileListRef = useRef<FileListRef>({selectedFileUid: ''})
     const [fileContent, setFileContent] = useState<string>('')
     const [fileUid, setFileUid] = useState<string>('')
     const fetchFile = async (uid: string, projectUid: string) => {
@@ -79,6 +76,22 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
         fetchFile('', '')
     }, [refreshSignal])
 
+    //Output processing
+    const statusModalRef = useRef<StatusModalRef>(null)
+    const [execComplete, setExecComplete] = React.useState<boolean>(false)
+    const [stdout, setStdout] = React.useState<string>('')
+
+    const showDrawer = () => {
+        if (statusModalRef.current !== null)
+            statusModalRef.current.showDrawer()
+    }
+
+    useEffect(() => {  //Open drawer when exec completes
+        setExecComplete(false)
+        if (statusModalRef.current !== null)
+            statusModalRef.current.showDrawer()
+    }, [execComplete]);
+
     return (
         <Layout style={{minHeight: '100vh'}}>
             <Sider style={{height: '100vh', background: '#e5e5e5', position: 'fixed'}}>
@@ -90,9 +103,17 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
             </Sider>
             <Content style={{height: '100vh', marginLeft: '200px', backgroundColor: '#edede9'}}>
                 <div style={{height: '100%', padding: '10px'}}>
-                    <CodeEditor codeFromFile={fileContent} fileUid={fileUid} projectUid={projectIndex.uid}/>
+                    <CodeEditor codeFromFile={fileContent} fileUid={fileUid} projectUid={projectIndex.uid}
+                                setStdout={setStdout} setExecComplete={setExecComplete} fetchFile={fetchFile}/>
                 </div>
             </Content>
+            <FloatButton
+                icon={<UpOutlined/>}
+                shape='circle'
+                onClick={showDrawer}
+                tooltip={'Show Execution Result'}
+            />
+            <StatusModal stdout={stdout} ref={statusModalRef}/>
         </Layout>
     )
 })

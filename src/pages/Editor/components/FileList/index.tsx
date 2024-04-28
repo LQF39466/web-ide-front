@@ -31,6 +31,10 @@ type EditModalRef = {
     showModal(): void
 }
 
+export type FileListRef = {
+    selectedFileUid: string
+}
+
 type DirectoryTreeProps = GetProps<typeof Tree.DirectoryTree>;
 
 const EditModal = forwardRef((props: EditModalProps, ref: Ref<EditModalRef>) => {
@@ -137,11 +141,11 @@ const FileOperation: React.FC<FileOpProps> = (props) => {
     </>
 }
 
-const FileList = forwardRef((props: FileListProps, ref) => {
+const FileList = forwardRef((props: FileListProps, ref: Ref<FileListRef>) => {
     const fileList = [props.projectIndex.entrance].concat(props.projectIndex.headers)
     const [selectedFileUid, setSelectedFileUid] = React.useState(props.projectIndex.entrance.uid)
     useImperativeHandle(ref, () => {
-        return selectedFileUid
+        return {selectedFileUid}
     })
 
     const listToTree = (fileList: FileIndex[]) => {

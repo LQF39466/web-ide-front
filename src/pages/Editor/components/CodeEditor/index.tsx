@@ -5,10 +5,13 @@ import {Slate, Editable, withReact, ReactEditor, RenderElementProps} from "slate
 import {createEditor, BaseText, Descendant, BaseRange, Transforms, Editor, Node} from 'slate'
 import Navigation from "../Navigation";
 
-type CodeEditorProps = {
+interface CodeEditorProps {
     codeFromFile: string
     fileUid: string
     projectUid: string
+    fetchFile: (uid: string, projectUid: string) => Promise<void>
+    setStdout: (stdOut: string) => void
+    setExecComplete: (status: boolean) => void
 }
 
 declare module 'slate' {
@@ -77,27 +80,31 @@ const CodeEditor = (props: CodeEditorProps) => {
         return nodes.map(n => Node.string(n)).join('\r\n')
     }
 
+    // This will not be triggered when selecting a single character from back to front and change it, reason unknown
     const handelContentChange = (value: Descendant[]) => {
         setNodes(value) //For line marker generation
+        if (props.fileUid === '') return
         localStorage.setItem('file_' + props.fileUid, serialize(value))  //Save changes at realtime
     }
 
-    return (<Flex style={{height: '100%'}} vertical={true}>
-        <div style={{
-            height: '52px', width: '100%', marginBottom: '10px', backgroundColor: 'white', borderRadius: '8px'
-        }}>
-            <Navigation projectUid={props.projectUid}/>
-        </div>
-        <div style={{
-            height: '100%',
-            width: '100%',
-            backgroundColor: 'white',
-            borderRadius: '8px',
-            boxSizing: 'border-box',
-            overflowY: 'auto',
-            overflowX: 'clip'
-        }}>
-            <Flex>
+    return (
+        <Flex style={{height: '100%'}} vertical={true}>
+            <div style={{
+                height: '52px', width: '100%', marginBottom: '10px', backgroundColor: 'white', borderRadius: '8px'
+            }}>
+                <Navigation projectUid={props.projectUid} fileUid={props.fileUid} setStdout={props.setStdout}
+                            setExecComplete={props.setExecComplete} fetchFile={props.fetchFile}/>
+            </div>
+            <div style={{
+                height: '100%',
+                width: '100%',
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                boxSizing: 'border-box',
+                overflowY: 'auto',
+                overflowX: 'clip'
+            }}>
+                <Flex>
                     <pre style={{
                         paddingLeft: '25px',
                         width: '60px',
@@ -110,16 +117,24 @@ const CodeEditor = (props: CodeEditorProps) => {
                     }}>
                         <code>{lineMarkerGen(nodes)}</code>
                     </pre>
-                <div style={{marginLeft: '5px', width: '100%', overflowX: 'auto', marginTop: '16px'}}>
-                    <Slate editor={editor} initialValue={initialValue} onValueChange={handelContentChange}>
-                        <Editable
-                            renderElement={ElementWrapper}
-                        />
-                    </Slate>
-                </div>
-            </Flex>
-        </div>
-    </Flex>);
+                    <div style={{marginLeft: '5px', width: '100%', overflowX: 'auto', marginTop: '16px'}}>
+                        <Slate editor={editor} initialValue={initialValue} onValueChange={handelContentChange}>
+                            <Editable
+                                renderElement={ElementWrapper}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Tab') {
+                                        event.preventDefault()
+                                        editor.insertText('    ')
+                                    }
+                                    editor.insertText('')   //force refresh
+                                }}
+                            />
+                        </Slate>
+                    </div>
+                </Flex>
+            </div>
+        </Flex>
+    );
 }
 
 const ElementWrapper = (props: RenderElementProps) => {

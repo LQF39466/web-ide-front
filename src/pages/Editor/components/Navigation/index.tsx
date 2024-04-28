@@ -3,27 +3,42 @@ import {Button, Flex, message, Tooltip} from 'antd'
 import {PlayCircleOutlined, StopOutlined} from '@ant-design/icons'
 import {post} from '../../../../utils/Comm/request'
 
-type NavigationProps = {
+interface NavigationProps {
     projectUid: string
+    fileUid: string
+    fetchFile: (uid: string, projectUid: string) => Promise<void>
+    setStdout: (stdOut: string) => void
+    setExecComplete: (status: boolean) => void
 }
 
 const Navigation: React.FC<NavigationProps> = (props: NavigationProps) => {
     const [loading, setLoading] = React.useState<boolean>(false)
     const [terminateDisabler, setTerminateDisabler] = React.useState<boolean>(true)
-    const [stdout, setStdout] = React.useState<string[]>([])
+
+    const saveFileToServer = async (fileUid: string) => {
+        const content = localStorage.getItem('file_' + fileUid)
+        if (content === null || props.projectUid === '' || fileUid === '') return
+        await post('/api/saveFile', JSON.stringify({
+            projectUid: props.projectUid,
+            uid: fileUid,
+            content: content
+        }))
+        await props.fetchFile(fileUid, props.projectUid)
+    }
 
     const runProject = async () => {
         setLoading(true)
         setTerminateDisabler(false)
+        await saveFileToServer(props.fileUid)
         const response = await post('/api/runProject', JSON.stringify({uid: props.projectUid}))
         if (response !== undefined && response.data.code === 0) {
-            console.log(response.data.stdout)
-            setStdout(response.data.stdout)
+            props.setStdout(response.data.stdout)
         } else {
             message.error('Failed to run project');
         }
         setLoading(false)
         setTerminateDisabler(true)
+        props.setExecComplete(true)
     }
 
     return (<>
