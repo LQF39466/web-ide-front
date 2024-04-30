@@ -65,9 +65,8 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
         if (response !== undefined) {
             setFileContent(response.data)
             setFileUid(uid)
-            message.info('File fetched')
         } else {
-            message.error('Failed to fetch file');
+            message.error('Failed to fetch file')
         }
     }
 
@@ -83,6 +82,9 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
     const [stdout, setStdout] = React.useState<string>('')
 
     const showDrawer = () => {
+        if (stdout === '') {
+            message.error('No execution result, run project first')
+        }
         if (statusModalRef.current !== null)
             statusModalRef.current.showDrawer()
     }

@@ -13,6 +13,7 @@ const StatusModal = forwardRef((props: StatusModalProps, ref: Ref<StatusModalRef
     const [open, setOpen] = useState(false)
 
     const showDrawer = () => {
+        if(props.stdout === '') return
         setOpen(true)
     }
 
