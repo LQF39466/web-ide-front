@@ -3,19 +3,19 @@ import {tokenize} from "./index";
 import {CPatternBase} from "./pattern-c";
 import {normalizeTokens} from "./token-normalize";
 
-const colorScheme = JSON.parse(`{
-    'comment': '#8C8C8C',
-    'char': '#000000',
-    'marco': '#0033B3',
-    'string': '#067D17',
-    'class-name': '#000000',
-    'keyword': '#CF8E6D',
-    'constant': '#871094',
-    'function': '#0033B3',
-    'number': '#1750EB',
-    'operator': '#871094',
-    'punctuation': '#000000',
-}`)
+// const colorScheme = JSON.parse(`{
+//     'comment': '#8C8C8C',
+//     'char': '#000000',
+//     'marco': '#0033B3',
+//     'string': '#067D17',
+//     'class-name': '#000000',
+//     'keyword': '#CF8E6D',
+//     'constant': '#871094',
+//     'function': '#0033B3',
+//     'number': '#1750EB',
+//     'operator': '#871094',
+//     'punctuation': '#000000',
+// }`)
 
 export type CodeBlockElement = {
     type: 'code-block'

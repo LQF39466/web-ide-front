@@ -13,7 +13,7 @@ import {
 } from "slate-react"
 import {
     BaseEditor,
-    BaseRange,
+    BaseRange, before,
     createEditor,
     Descendant,
     Editor,
@@ -25,8 +25,10 @@ import {
 } from 'slate'
 import Navigation from "../Navigation";
 import {getChildNodeToDecorations} from "../../../../utils/CodeHighlighter/defaultStyle";
+import '../../../../utils/CodeHighlighter/CodeStyle.css'
+import {match} from "node:assert";
 
-interface CodeEditorProps {
+type CodeEditorProps = {
     codeFromFile: string
     fileUid: string
     projectUid: string
@@ -54,18 +56,8 @@ declare module 'slate' {
     }
 }
 
-const ParagraphType = 'paragraph'
 const CodeBlockType = 'code-block'
 const CodeLineType = 'code-line'
-
-const CodeElement = (props: RenderElementProps) => {
-    return (
-        <pre {...props.attributes}
-             style={{margin: '0', fontFamily: 'source-code-pro, Menlo, Monaco, Consolas, monospace', fontSize: '16px'}}>
-            <code>{props.children}</code>
-        </pre>
-    )
-}
 
 const CodeEditor = (props: CodeEditorProps) => {
     const [editor] = useState(() => withReact(createEditor()))
@@ -76,31 +68,38 @@ const CodeEditor = (props: CodeEditorProps) => {
         const descendants: Descendant[] = []
         text.split('\r\n').forEach((line) => {
             descendants.push({
-                type: 'code-line',
+                type: CodeLineType,
                 children: [{text: line}],
             })
         })
-        return descendants
+        const codeBlock: CodeBlockElement = {
+            type: CodeBlockType,
+            language: 'c',
+            children: descendants
+        }
+        return codeBlock
     }
 
     const updateNodes = () => { //Clear current slate then insert with new content
-        setNodes(stringToDescendant(props.codeFromFile))
-        const currentEnd = Editor.end(editor, [])   //Mark the end of current slate
-        Transforms.insertNodes(editor, stringToDescendant(props.codeFromFile), {at: Editor.end(editor, [])})    //Insert first, editor does not allow nodes to be empty
-        Transforms.removeNodes(editor, {at: {anchor: Editor.start(editor, []), focus: currentEnd}})
+        const currentCodeBlock = stringToDescendant(props.codeFromFile)
+        setNodes([currentCodeBlock])
+        Transforms.deselect(editor);
+        Transforms.removeNodes(editor, { at: [0] });
+        Transforms.insertNodes(editor, currentCodeBlock, { at: [0] });
     }
 
     useEffect(() => {
         updateNodes()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [props]);
+    }, [props.codeFromFile])
 
-    const initialValue: Descendant[] = stringToDescendant('')
+    const initialValue: Descendant[] = [stringToDescendant('')]
 
     const lineMarkerGen = (nodeList: Descendant[]) => {
-        let lineNum = nodeList.length
+        const codeBlock: any = nodeList[0]
+        if(!codeBlock || codeBlock.type !== CodeBlockType || !codeBlock.children) return ''
         let lineMarker = ''
-        for (let i = 1; i <= lineNum; i++) {
+        for (let i = 1; i <= codeBlock.children.length; i++) {
             lineMarker = lineMarker + i + '\n'
         }
         return lineMarker
@@ -111,10 +110,13 @@ const CodeEditor = (props: CodeEditorProps) => {
     }
 
     // This will not be triggered when selecting a single character from back to front and change it, reason unknown
-    const handelContentChange = (value: Descendant[]) => {
-        setNodes(value) //For line marker generation
+    const handelContentChange = (nodeList: Descendant[]) => {
+        if(nodes === nodeList) return
+        setNodes(nodeList) //For line marker generation
         if (props.fileUid === '') return
-        localStorage.setItem('file_' + props.fileUid, serialize(value))  //Save changes at realtime
+        const codeBlock: any = nodeList[0]
+        if(!codeBlock || codeBlock.type !== CodeBlockType || !codeBlock.children) return
+        localStorage.setItem('file_' + props.fileUid, serialize(codeBlock.children))  //Save changes at realtime
     }
 
     return (
@@ -153,12 +155,12 @@ const CodeEditor = (props: CodeEditorProps) => {
                             <Editable
                                 decorate={decorate}
                                 renderElement={ElementWrapper}
+                                renderLeaf={renderLeaf}
                                 onKeyDown={(event) => {
                                     if (event.key === 'Tab') {
                                         event.preventDefault()
                                         editor.insertText('    ')
                                     }
-                                    editor.insertText('')   //force refresh
                                 }}
                             />
                         </Slate>
@@ -170,20 +172,14 @@ const CodeEditor = (props: CodeEditorProps) => {
 }
 
 const ElementWrapper = (props: RenderElementProps) => {
-    const element: Element = props.element
-    const {attributes, children} = props
+    const {attributes, children, element} = props
     const editor = useSlateStatic()
 
     if (element.type === CodeBlockType) {
-        const setLanguage = (language: string) => {
-            const path = ReactEditor.findPath(editor, element)
-            Transforms.setNodes(editor, {language}, {at: path})
-        }
-
         return (
             <div
                 {...attributes}
-                style={{position: 'relative'}}
+                style={{position: 'relative', fontFamily: 'source-code-pro, Menlo, Monaco, Consolas, monospace', fontSize: '16px'}}
                 spellCheck={false}
             >
                 {children}
@@ -213,8 +209,8 @@ const renderLeaf = (props: RenderLeafProps) => {
 
     return (
         <span {...attributes} className={Object.keys(rest).join(' ')}>
-      {children}
-    </span>
+            {children}
+        </span>
     )
 }
 
@@ -241,9 +237,8 @@ const SetNodeToDecorations = () => {
             match: n => Element.isElement(n) && n.type === CodeBlockType,
         })
     )
-
     editor.nodeToDecorations = mergeMaps(
-        ...blockEntries.map(getChildNodeToDecorations)
+        ...blockEntries.map(blockEntry => getChildNodeToDecorations(blockEntry as NodeEntry<CodeBlockElement>))
     )
 
     return null

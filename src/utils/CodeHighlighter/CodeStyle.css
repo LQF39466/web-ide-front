@@ -1,0 +1,33 @@
+.comment {
+    color: #8C8C8C
+}
+.char {
+    color: #000000
+}
+.marco{
+    color: #061178
+}
+.string {
+    color: #3F6600
+}
+.class-name {
+    color: #000000
+}
+.keyword {
+    color: #D46B08
+}
+.constant {
+    color: #871094
+}
+.function {
+    color: #0033B3
+}
+.number {
+    color: #08979C
+}
+.operator {
+    color: #871094
+}
+.punctuation {
+    color: #000000
+}
