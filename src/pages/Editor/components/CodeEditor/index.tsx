@@ -1,9 +1,30 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {Flex} from "antd"
 
-import {Slate, Editable, withReact, ReactEditor, RenderElementProps} from "slate-react"
-import {createEditor, BaseText, Descendant, BaseRange, Transforms, Editor, Node} from 'slate'
+import {
+    Editable,
+    ReactEditor,
+    RenderElementProps,
+    RenderLeafProps,
+    Slate,
+    useSlate,
+    useSlateStatic,
+    withReact
+} from "slate-react"
+import {
+    BaseEditor,
+    BaseRange,
+    createEditor,
+    Descendant,
+    Editor,
+    Element,
+    Node,
+    NodeEntry,
+    Range,
+    Transforms
+} from 'slate'
 import Navigation from "../Navigation";
+import {getChildNodeToDecorations} from "../../../../utils/CodeHighlighter/defaultStyle";
 
 interface CodeEditorProps {
     codeFromFile: string
@@ -14,21 +35,28 @@ interface CodeEditorProps {
     setExecComplete: (status: boolean) => void
 }
 
+type CodeBlockElement = {
+    type: 'code-block'
+    language: string
+    children: Descendant[]
+}
+
+type CodeLineElement = {
+    type: 'code-line'
+    children: Descendant[]
+}
+
 declare module 'slate' {
     interface CustomTypes {
-        Editor: ReactEditor
-        Text: BaseText & {
-            placeholder?: string
-            onPlaceholderResize?: (node: HTMLElement | null) => void
-            [key: string]: unknown
-        }
-        Range: BaseRange & {
-            placeholder?: string
-            onPlaceholderResize?: (node: HTMLElement | null) => void
-            [key: string]: unknown
-        }
+        Editor: BaseEditor & ReactEditor & { nodeToDecorations?: Map<Element, Range[]> }
+        Element: CodeBlockElement | CodeLineElement
+        Range: BaseRange & { [key: string]: unknown }
     }
 }
+
+const ParagraphType = 'paragraph'
+const CodeBlockType = 'code-block'
+const CodeLineType = 'code-line'
 
 const CodeElement = (props: RenderElementProps) => {
     return (
@@ -43,11 +71,12 @@ const CodeEditor = (props: CodeEditorProps) => {
     const [editor] = useState(() => withReact(createEditor()))
     const [nodes, setNodes] = useState<Descendant[]>([])
 
+    const decorate = useDecorate(editor)
     const stringToDescendant = (text: string) => {
         const descendants: Descendant[] = []
         text.split('\r\n').forEach((line) => {
             descendants.push({
-                type: 'code-inline',
+                type: 'code-line',
                 children: [{text: line}],
             })
         })
@@ -120,7 +149,9 @@ const CodeEditor = (props: CodeEditorProps) => {
                     </pre>
                     <div style={{marginLeft: '5px', width: '100%', overflowX: 'auto', marginTop: '16px'}}>
                         <Slate editor={editor} initialValue={initialValue} onValueChange={handelContentChange}>
+                            <SetNodeToDecorations/>
                             <Editable
+                                decorate={decorate}
                                 renderElement={ElementWrapper}
                                 onKeyDown={(event) => {
                                     if (event.key === 'Tab') {
@@ -139,9 +170,95 @@ const CodeEditor = (props: CodeEditorProps) => {
 }
 
 const ElementWrapper = (props: RenderElementProps) => {
+    const element: Element = props.element
+    const {attributes, children} = props
+    const editor = useSlateStatic()
+
+    if (element.type === CodeBlockType) {
+        const setLanguage = (language: string) => {
+            const path = ReactEditor.findPath(editor, element)
+            Transforms.setNodes(editor, {language}, {at: path})
+        }
+
+        return (
+            <div
+                {...attributes}
+                style={{position: 'relative'}}
+                spellCheck={false}
+            >
+                {children}
+            </div>
+        )
+    }
+
+    if (element.type === CodeLineType) {
+        return (
+            <div {...attributes} style={{position: 'relative'}}>
+                {children}
+            </div>
+        )
+    }
+
+    const Tag = editor.isInline(element) ? 'span' : 'div'
     return (
-        <CodeElement attributes={props.attributes} children={props.children} element={props.element}/>
+        <Tag {...attributes} style={{position: 'relative'}}>
+            {children}
+        </Tag>
     )
+}
+
+const renderLeaf = (props: RenderLeafProps) => {
+    const {attributes, children, leaf} = props
+    const {text, ...rest} = leaf
+
+    return (
+        <span {...attributes} className={Object.keys(rest).join(' ')}>
+      {children}
+    </span>
+    )
+}
+
+const useDecorate = (editor: Editor) => {
+    return useCallback(
+        ([node]: NodeEntry) => {
+            if (Element.isElement(node) && node.type === CodeLineType) {
+                if (editor.nodeToDecorations === undefined) return []
+                return editor.nodeToDecorations.get(node) || []
+            }
+            return []
+        },
+        [editor.nodeToDecorations]
+    )
+}
+
+const SetNodeToDecorations = () => {
+    const editor = useSlate()
+
+    const blockEntries = Array.from(
+        Editor.nodes(editor, {
+            at: [],
+            mode: 'highest',
+            match: n => Element.isElement(n) && n.type === CodeBlockType,
+        })
+    )
+
+    editor.nodeToDecorations = mergeMaps(
+        ...blockEntries.map(getChildNodeToDecorations)
+    )
+
+    return null
+}
+
+const mergeMaps = <K, V>(...maps: Map<K, V>[]) => {
+    const newMap = new Map<K, V>()
+
+    for (const m of maps) {
+        m.forEach((value, key) => {
+            newMap.set(key, value)
+        })
+    }
+
+    return newMap
 }
 
 export default CodeEditor
