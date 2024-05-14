@@ -13,7 +13,7 @@ import {
 } from "slate-react"
 import {
     BaseEditor,
-    BaseRange, before,
+    BaseRange,
     createEditor,
     Descendant,
     Editor,
@@ -24,9 +24,8 @@ import {
     Transforms
 } from 'slate'
 import Navigation from "../Navigation";
-import {getChildNodeToDecorations} from "../../../../utils/CodeHighlighter/defaultStyle";
+import {getChildNodeToDecorations} from "../../../../utils/CodeHighlighter/decorator";
 import '../../../../utils/CodeHighlighter/CodeStyle.css'
-import {match} from "node:assert";
 
 type CodeEditorProps = {
     codeFromFile: string
@@ -162,6 +161,7 @@ const CodeEditor = (props: CodeEditorProps) => {
                                         editor.insertText('    ')
                                     }
                                 }}
+                                style={{outline: 'none'}}
                             />
                         </Slate>
                     </div>

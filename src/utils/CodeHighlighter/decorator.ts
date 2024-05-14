@@ -1,4 +1,7 @@
-import {Token as PrismToken} from "./types";
+import {Token as SyntaxToken} from "./types";
+import {Descendant, Element, Node, NodeEntry, Range} from "slate";
+import {tokenize} from "./tokenizer";
+import {CPatternBase} from "./pattern-c";
 
 type Token = {
     types: string[]
@@ -37,9 +40,7 @@ const appendTypes = (types: string[], add: string[] | string): string[] => {
 // are always of type "plain".
 // This is not recursive to avoid exceeding the call-stack limit, since it's unclear
 // how nested Prism's tokens can become
-const normalizeTokens = (
-    tokens: Array<PrismToken | string>
-): Token[][] => {
+const normalizeTokens = (tokens: Array<SyntaxToken | string>): Token[][] => {
     const typeArrStack: string[][] = [[]]
     const tokenArrStack = [tokens]
     const tokenArrIndexStack = [0]
@@ -110,4 +111,53 @@ const normalizeTokens = (
     return acc
 }
 
-export {normalizeTokens}
+type CodeBlockElement = {
+    type: 'code-block'
+    language: string
+    children: Descendant[]
+}
+
+const getChildNodeToDecorations = ([block, blockPath,]: NodeEntry<CodeBlockElement>) => {
+    const nodeToDecorations = new Map<Element, Range[]>()
+
+    const text = block.children.map(line => Node.string(line)).join('\n')
+    const tokens = tokenize(text, CPatternBase)
+    const normalizedTokens = normalizeTokens(tokens) // make tokens flat and grouped by line
+    const blockChildren = block.children as Element[]
+
+    for (let index = 0; index < normalizedTokens.length; index++) {
+        const tokens = normalizedTokens[index]
+        const element = blockChildren[index]
+
+        if (!nodeToDecorations.has(element)) {
+            nodeToDecorations.set(element, [])
+        }
+
+        let start = 0
+        for (const token of tokens) {
+            const length = token.content.length
+            if (!length) {
+                continue
+            }
+
+            const end = start + length
+
+            const path = [...blockPath, index, 0]
+            const range = {
+                anchor: { path, offset: start },
+                focus: { path, offset: end },
+                token: true,
+                ...Object.fromEntries(token.types.map(type => [type, true])),
+            }
+
+            nodeToDecorations.get(element)!.push(range)
+
+            start = end
+        }
+    }
+
+    return nodeToDecorations
+}
+
+
+export {getChildNodeToDecorations}

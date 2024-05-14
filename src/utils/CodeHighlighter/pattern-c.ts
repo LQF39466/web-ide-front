@@ -25,8 +25,6 @@ export const CPatternBase= {
 }
 
 CPatternBase['marco'] = {
-    // allow for multiline macro definitions
-    // spaces after the # character compile fine with gcc
     pattern: /(^[\t ]*)#\s*[a-z](?:[^\r\n\\/]|\/(?!\*)|\/\*(?:[^*]|\*(?!\/))*\*\/|\\(?:\r\n|[\s\S]))*/im,
     lookbehind: true,
     greedy: true,
