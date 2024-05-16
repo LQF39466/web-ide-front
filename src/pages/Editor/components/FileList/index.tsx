@@ -3,7 +3,6 @@ import {Flex, Button, Tree, Form, message, Input, Select, Modal} from 'antd';
 import type {GetProps, TreeDataNode} from 'antd';
 import {FileIndex, ProjectIndex} from "../../../../types";
 import {PlusOutlined, DeleteOutlined} from "@ant-design/icons";
-import {v4 as uuidv4} from "uuid";
 import {post} from "../../../../utils/Comm/request";
 import ConfirmModal, {ConfirmModalRef} from "../../../../utils/ConfirmModal";
 
@@ -46,7 +45,6 @@ const EditModal = forwardRef((props: EditModalProps, ref: Ref<EditModalRef>) => 
     }
 
     const handleOk = async (value: FileIndex) => {
-        value.uid = uuidv4()
         value.projectUid = props.projectUid
         const response = await post('/api/addFile', JSON.stringify(value))
         if (response !== undefined) message.info(response.data.message)

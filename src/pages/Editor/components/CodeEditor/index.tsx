@@ -63,6 +63,7 @@ const CodeEditor = (props: CodeEditorProps) => {
     const [nodes, setNodes] = useState<Descendant[]>([])
 
     const decorate = useDecorate(editor)
+
     const stringToDescendant = (text: string) => {
         const descendants: Descendant[] = []
         text.split('\r\n').forEach((line) => {

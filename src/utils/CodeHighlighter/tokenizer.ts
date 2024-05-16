@@ -43,11 +43,6 @@ function matchGrammar(text: string, tokenList: LinkedList<string | Token>, gramm
 
                 let str = currentNode.value
 
-                // if (tokenList.length > text.length) {
-                //     // Something went terribly wrong, ABORT, ABORT!
-                //     return;
-                // }
-
                 if (str instanceof Token) continue
 
                 let removeCount = 1 // this is the to parameter of removeBetween
