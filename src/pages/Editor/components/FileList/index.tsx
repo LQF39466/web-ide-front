@@ -2,7 +2,7 @@ import React, {forwardRef, Ref, useEffect, useImperativeHandle, useRef, useState
 import {Flex, Button, Tree, Form, message, Input, Select, Modal} from 'antd';
 import type {GetProps, TreeDataNode} from 'antd';
 import {FileIndex, ProjectIndex} from "../../../../types";
-import {PlusOutlined, DeleteOutlined} from "@ant-design/icons";
+import {FileAddOutlined, DeleteOutlined, CodeOutlined, FileTextOutlined, BlockOutlined} from "@ant-design/icons";
 import {post} from "../../../../utils/Comm/request";
 import ConfirmModal, {ConfirmModalRef} from "../../../../utils/ConfirmModal";
 
@@ -89,8 +89,8 @@ const EditModal = forwardRef((props: EditModalProps, ref: Ref<EditModalRef>) => 
                     rules={[{required: true}]}
                 >
                     <Select>
-                        <Option value=".c">C source file</Option>
                         <Option value=".h">C header file</Option>
+                        <Option value=".txt">Text file</Option>
                     </Select>
                 </Form.Item>
                 <Form.Item wrapperCol={{span: 24}}>
@@ -120,7 +120,7 @@ const FileOperation: React.FC<FileOpProps> = (props) => {
         <Flex justify={'space-between'} style={{padding: '10px'}}>
             <Button
                 shape='round'
-                icon={<PlusOutlined/>}
+                icon={<FileAddOutlined/>}
                 type='primary'
                 block
                 style={{marginRight: '10px'}}
@@ -140,7 +140,7 @@ const FileOperation: React.FC<FileOpProps> = (props) => {
 }
 
 const FileList = forwardRef((props: FileListProps, ref: Ref<FileListRef>) => {
-    const fileList = [props.projectIndex.entrance].concat(props.projectIndex.headers)
+    const fileList = [props.projectIndex.entrance].concat(props.projectIndex.headers, props.projectIndex.textFiles)
     const [selectedFileUid, setSelectedFileUid] = React.useState(props.projectIndex.entrance.uid)
     useImperativeHandle(ref, () => {
         return {selectedFileUid}
@@ -150,10 +150,15 @@ const FileList = forwardRef((props: FileListProps, ref: Ref<FileListRef>) => {
         const treeData: TreeDataNode[] = [];
         let key = 0
         fileList.forEach((e: FileIndex) => {
+            let icon;
+            if (e.fileType === '.c') icon = <CodeOutlined/>
+            else if (e.fileType === '.h') icon = <BlockOutlined/>
+            else icon = <FileTextOutlined/>
             treeData.push({
-                title: e.title,
+                title: e.title + e.fileType,
                 key: '0-' + key,
                 isLeaf: true,
+                icon: icon
             })
             key++
         })

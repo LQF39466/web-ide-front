@@ -7,6 +7,7 @@
      lastEdit: number,
      entrance: FileIndex
      headers: Array<FileIndex>
+     textFiles: Array<FileIndex>
  }
 
  interface FileIndex {

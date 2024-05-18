@@ -1,6 +1,5 @@
 import React, {useState, forwardRef, useImperativeHandle, Ref} from "react";
 import {Form, Modal, Input, Select, message, Button} from 'antd'
-import {v4 as uuidv4} from 'uuid'
 import {ProjectIndex} from "../../../../types";
 import {post} from "../../../../utils/Comm/request"
 
@@ -23,7 +22,6 @@ const ProjectInfoEditor = forwardRef((props: EditModalProps, ref: Ref<EditModalR
     }
 
     const handleOk = async (value: ProjectIndex) => {
-        value.uid = uuidv4()
         const response = await post('/api/addProject', JSON.stringify(value))
         if (response !== undefined) message.info(response.data.message)
         props.refresh()

@@ -15,6 +15,7 @@
     "@types/uuid": "^9.0.8",
     "antd": "^5.13.1",
     "axios": "^1.6.8",
+    "css.gg": "^2.1.1",
     "dayjs": "^1.11.10",
     "immutable": "^5.0.0-beta.5",
     "react": "^18.2.0",
@@ -24,7 +25,6 @@
     "slate": "^0.102.0",
     "slate-react": "^0.102.0",
     "typescript": "^4.9.5",
-    "uuid": "^9.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

@@ -17,6 +17,7 @@ const EditorLayout: React.FC = forwardRef((props, ref) => {
         details: "",
         entrance: {uid: '', projectUid: '', createTime: 0, title: '', lastEdit: 0, fileType: ''},
         headers: [],
+        textFiles: [],
         languageType: "",
         lastEdit: 0,
         title: "",
